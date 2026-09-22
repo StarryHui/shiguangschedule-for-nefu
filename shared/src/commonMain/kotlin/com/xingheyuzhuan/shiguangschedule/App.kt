@@ -45,6 +45,7 @@ import com.xingheyuzhuan.shiguangschedule.ui.settings.quickactions.QuickActionsS
 import com.xingheyuzhuan.shiguangschedule.ui.settings.quickactions.delete.QuickDeleteScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.quickactions.tweaks.TweakScheduleScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.style.StyleSettingsScreen
+import com.xingheyuzhuan.shiguangschedule.ui.settings.style.widget.WidgetStyleSettingsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.themesettings.ThemeSettingsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.time.ComboScheduleEditScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.time.SingleScheduleEditScreen
@@ -184,11 +185,12 @@ fun ScreenContent(
         Destination.TweakSchedule -> TweakScheduleScreen(onBack)
         Destination.ContributionList -> ContributionScreen(onBack)
         Destination.CourseManagementList -> CourseNameListScreen(onNavigate, onBack)
-        Destination.StyleSettings -> StyleSettingsScreen(onBack)
+        Destination.StyleSettings -> StyleSettingsScreen(onNavigate,onBack)
         Destination.QuickDelete -> QuickDeleteScreen(onBack)
         Destination.ThemeSettings -> ThemeSettingsScreen(onBack)
         Destination.BackupAndRestore -> BackupScreen(onBack)
         Destination.LanguageSettings -> LanguageSettingScreen(onBack)
+        Destination.WidgetStyleSettings -> WidgetStyleSettingsScreen(onBack)
 
         Destination.TimeScheduleManagement -> TimeScheduleManagementScreen(
             onBack = onBack,

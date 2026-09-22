@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/widget_root"
+    android:id="@+id/widget_root_dark"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 1. 主卡片视图：包含背景 ImageView 与内容布局 -->
+    <!-- 1. 暗色主卡片视图：包含背景 ImageView 与内容布局 -->
     <FrameLayout
-        android:id="@+id/inner_content_card"
+        android:id="@+id/inner_content_card_dark"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- 专门接收背景着色与透明度的 ImageView -->
+        <!-- 专门接收暗色背景着色与透明度的 ImageView -->
         <ImageView
-            android:id="@+id/card_bg_image"
+            android:id="@+id/card_bg_image_dark"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_bg_rounded" />
 
-        <!-- 实际内容容器（不设置背景，保持透明） -->
+        <!-- 内容布局（保持透明背景） -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -32,7 +32,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tv_header_title"
+                    android:id="@+id/tv_header_title_dark"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/widget_text_secondary"
@@ -46,7 +46,7 @@
                     android:orientation="horizontal" />
 
                 <TextView
-                    android:id="@+id/tv_footer"
+                    android:id="@+id/tv_footer_dark"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/widget_text_hint"
@@ -60,7 +60,7 @@
                     android:orientation="horizontal" />
 
                 <TextView
-                    android:id="@+id/tv_current_week"
+                    android:id="@+id/tv_current_week_dark"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/widget_text_secondary"
@@ -68,8 +68,9 @@
                     tools:text="第 18 周" />
             </LinearLayout>
 
+            <!-- 暗色版 ListView -->
             <ListView
-                android:id="@+id/list_view_courses"
+                android:id="@+id/list_view_courses_dark"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_marginTop="2dp"
@@ -77,9 +78,9 @@
                 android:divider="@null"
                 android:dividerHeight="0dp" />
 
-            <!-- 无课/已结束 嵌入式状态提示 -->
+            <!-- 暗色无课/已结束 嵌入式状态提示 -->
             <LinearLayout
-                android:id="@+id/container_status"
+                android:id="@+id/container_status_dark"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
@@ -88,7 +89,7 @@
                 tools:visibility="gone">
 
                 <TextView
-                    android:id="@+id/tv_status_title"
+                    android:id="@+id/tv_status_title_dark"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/widget_text_primary"
@@ -97,7 +98,7 @@
                     tools:text="今日课程已结束" />
 
                 <TextView
-                    android:id="@+id/tv_status_msg"
+                    android:id="@+id/tv_status_msg_dark"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
@@ -109,16 +110,16 @@
         </LinearLayout>
     </FrameLayout>
 
-    <!-- 2. 假期全屏覆盖视图（同样配备专属背景 ImageView） -->
+    <!-- 2. 暗色假期全屏覆盖视图 -->
     <FrameLayout
-        android:id="@+id/container_full_status"
+        android:id="@+id/container_full_status_dark"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
         tools:visibility="gone">
 
         <ImageView
-            android:id="@+id/full_status_bg_image"
+            android:id="@+id/full_status_bg_image_dark"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/widget_bg_rounded" />
@@ -136,7 +137,7 @@
                 android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/tv_full_status_title"
+                android:id="@+id/tv_full_status_title_dark"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/widget_text_primary"
@@ -145,7 +146,7 @@
                 tools:text="假期中" />
 
             <TextView
-                android:id="@+id/tv_full_status_msg"
+                android:id="@+id/tv_full_status_msg_dark"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"

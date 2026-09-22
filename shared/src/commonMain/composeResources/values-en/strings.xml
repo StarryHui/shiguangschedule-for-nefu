@@ -604,4 +604,8 @@
     <string name="schedule_type_combo">Combo</string>
     <string name="desc_schedule_management">Supports public schedules and combined schedules</string>
     <string name="action_apply_to_all_schemes">Apply to all schemes</string>
+    <string name="label_hide_date">Hide date</string>
+    <string name="title_widget_style">Widget style</string>
+    <string name="title_theme_seed_color">Theme seed color</string>
+    <string name="style_category_other">Other styles</string>
 </resources>

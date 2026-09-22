@@ -537,6 +537,8 @@
     <string name="label_page_text_color">课表页面文字颜色</string>
     <string name="label_course_text_color">课程块文字颜色</string>
     <string name="label_schedule_mode_24h">24小时时间轴模式</string>
+    <string name="label_hide_date">隐藏日期</string>
+    <string name="title_widget_style">小组件样式</string>
 
     <!-- 快捷操作 -->
     <string name="item_quick_actions">快捷操作</string>
@@ -609,4 +611,6 @@
     <string name="backup_target_webdav">WebDAV 云同步</string>
     <string name="backup_target_local_zip">本地 ZIP 文件</string>
 
+    <string name="title_theme_seed_color">主题种子色</string>
+    <string name="style_category_other">其他样式</string>
 </resources>

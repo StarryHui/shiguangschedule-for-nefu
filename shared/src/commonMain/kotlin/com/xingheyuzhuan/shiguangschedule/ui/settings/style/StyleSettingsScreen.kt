@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.tool.FileManagerCallbacks
 import com.xingheyuzhuan.shiguangschedule.tool.rememberFileManager
 import com.xingheyuzhuan.shiguangschedule.ui.components.AdvancedColorPicker
@@ -63,6 +64,7 @@ import shiguangschedule.shared.generated.resources.item_personalization
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StyleSettingsScreen(
+    onNavigate: (Destination) -> Unit,
     onBack: () -> Unit,
     viewModel: StyleSettingsViewModel = koinViewModel()
 ) {
@@ -169,7 +171,8 @@ fun StyleSettingsScreen(
                             viewModel = viewModel,
                             onWallpaperClick = {
                                 fileManager.pickImage()
-                            }
+                            },
+                            onNavigate = onNavigate
                         ) { isDark, idx ->
                             isDarkTarget = isDark
                             selectedColorIndex = idx
@@ -202,7 +205,8 @@ fun StyleSettingsScreen(
                             viewModel = viewModel,
                             onWallpaperClick = {
                                 fileManager.pickImage()
-                            }
+                            },
+                            onNavigate = onNavigate
                         ) { isDark, idx ->
                             isDarkTarget = isDark
                             selectedColorIndex = idx
