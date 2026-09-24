@@ -172,9 +172,11 @@ class WeeklyScheduleViewModel(
 
         if (config != null && tableId.isNotEmpty()) {
             val window = listOf(
+                date.minus(2, DateTimeUnit.WEEK),
                 date.minus(1, DateTimeUnit.WEEK),
                 date,
-                date.plus(1, DateTimeUnit.WEEK)
+                date.plus(1, DateTimeUnit.WEEK),
+                date.plus(2, DateTimeUnit.WEEK)
             )
 
             val today = getTodayLocalDate()
