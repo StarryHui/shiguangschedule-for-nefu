@@ -173,35 +173,14 @@ function mergeCourses(courseList) {
 }
 
 /**
- * 东北林业大学预设作息时间表定义 (1~12节)
+ * 东北林业大学预设作息时间表定义 (1~12节) - 东北林业大学标准作息时间
  */
-function getPresetTimeSlots(mode) {
-    // mode: 0 - 丹青楼作息 (上午第3节10:05开始)
-    // mode: 1 - 常规教学楼作息 (主楼/成栋楼/锦绣楼等，上午第3节09:55开始)
-    if (mode === 1) {
-        // 常规教学楼
-        return [
-            { number: 1, startTime: "08:00", endTime: "08:45" },
-            { number: 2, startTime: "08:50", endTime: "09:35" },
-            { number: 3, startTime: "09:55", endTime: "10:40" },
-            { number: 4, startTime: "10:45", endTime: "11:30" },
-            { number: 5, startTime: "13:40", endTime: "14:25" },
-            { number: 6, startTime: "14:30", endTime: "15:15" },
-            { number: 7, startTime: "15:35", endTime: "16:20" },
-            { number: 8, startTime: "16:25", endTime: "17:10" },
-            { number: 9, startTime: "18:00", endTime: "18:45" },
-            { number: 10, startTime: "18:50", endTime: "19:35" },
-            { number: 11, startTime: "19:40", endTime: "20:25" },
-            { number: 12, startTime: "20:30", endTime: "21:15" }
-        ];
-    }
-
-    // 默认：丹青楼作息 (全校公共课主要教学楼)
+function getPresetTimeSlots() {
     return [
         { number: 1, startTime: "08:00", endTime: "08:45" },
         { number: 2, startTime: "08:50", endTime: "09:35" },
-        { number: 3, startTime: "10:05", endTime: "10:50" },
-        { number: 4, startTime: "10:55", endTime: "11:40" },
+        { number: 3, startTime: "09:55", endTime: "10:40" },
+        { number: 4, startTime: "10:45", endTime: "11:30" },
         { number: 5, startTime: "13:40", endTime: "14:25" },
         { number: 6, startTime: "14:30", endTime: "15:15" },
         { number: 7, startTime: "15:35", endTime: "16:20" },
@@ -398,18 +377,21 @@ async function runImportFlow() {
             return;
         }
 
-        // 9. 作息时间表设置 (丹青楼 vs 常规教学楼)
+        // 9. 作息时间表设置 (东北林业大学标准作息时间)
         const timeOptions = [
-            "丹青楼作息 (推荐，公共课第3节10:05开始)",
-            "常规教学楼作息 (主楼/成栋楼等，第3节09:55开始)"
+            "东北林业大学标准作息时间"
         ];
         const timeChoice = await window.shiguangBridgePromise.showSingleSelection(
-            "选择主要上课作息时间",
+            "选择作息时间表",
             JSON.stringify(timeOptions),
-            0 // 默认选中丹青楼
+            0
         );
+        if (timeChoice === null) {
+            window.shiguangBridge.showToast("已取消作息时间选择。");
+            return;
+        }
 
-        const timeSlots = getPresetTimeSlots(timeChoice === 1 ? 1 : 0);
+        const timeSlots = getPresetTimeSlots();
 
         // 10. 保存课表全局配置
         const courseConfig = {
