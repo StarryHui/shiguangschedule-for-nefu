@@ -97,8 +97,9 @@ androidComponents {
                 it.filterType == FilterConfiguration.FilterType.ABI
             }?.identifier ?: "universal"
 
-            // 动态设置输出的 APK 文件名
-            output.outputFileName.set("shiguangschedule-v${versionName}-${abiFilter}-${buildType}.apk")
+            val patchVersion = "v2"
+            // 动态设置输出的 APK 文件名，格式如 shiguangschedule-v2.0.1-v2-arm64-v8a-release.apk
+            output.outputFileName.set("shiguangschedule-v${versionName}-${patchVersion}-${abiFilter}-${buildType}.apk")
         }
     }
 }

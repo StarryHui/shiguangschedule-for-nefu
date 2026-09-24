@@ -39,6 +39,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.LayoutDirection
@@ -511,7 +512,9 @@ fun WeeklyScheduleScreen(
                     viewState = gridViewState,
                     actions = gridActions,
                     style = composedStyle,
-                    modifier = Modifier.padding(bottom = systemNavigationBarInset)
+                    modifier = Modifier
+                        .padding(bottom = systemNavigationBarInset)
+                        .graphicsLayer { }
                 )
             }
         }

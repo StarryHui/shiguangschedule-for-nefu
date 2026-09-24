@@ -166,9 +166,9 @@ fun DayHeader(
     subTextColor: Color,
     strokeWidthPx: Float
 ) {
-    BoxWithConstraints(Modifier.fillMaxWidth().height(style.dayHeaderHeight)) {
-        val shouldShowDate = !style.hideDateUnderDay && maxHeight >= 42.dp
+    val shouldShowDate = !style.hideDateUnderDay && style.dayHeaderHeight >= 42.dp
 
+    Box(Modifier.fillMaxWidth().height(style.dayHeaderHeight)) {
         Row(Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
@@ -297,6 +297,7 @@ fun TimeColumn(
         }
     }
 
+    val h = style.sectionHeight
     Column(modifier.width(style.timeColumnWidth)) {
         for (index in 0 until maxGridSections) {
             val isCurrentHourActive = if (is24HourMode) {
@@ -305,10 +306,10 @@ fun TimeColumn(
                 index + 1 == currentSectionIndex
             }
 
-            BoxWithConstraints(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(style.sectionHeight)
+                    .height(h)
                     .clickable { onTimeSlotClicked() }
                     .background(if (isCurrentHourActive) MaterialTheme.colorScheme.primaryContainer.copy(0.4f) else Color.Transparent)
                     .drawBehind {
@@ -321,7 +322,6 @@ fun TimeColumn(
                     },
                 contentAlignment = if (is24HourMode) Alignment.TopCenter else Alignment.Center
             ) {
-                val h = maxHeight
                 if (is24HourMode && activeDragMinuteStr != null && index == activeDragHour) {
                     Box(
                         modifier = Modifier.matchParentSize(),

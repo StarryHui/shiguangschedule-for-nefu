@@ -14,12 +14,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
@@ -190,13 +192,15 @@ fun ScheduleGrid(
                 Layout(
                     content = {
                         singleSchedulables.forEach { item ->
-                            val isExpanded = state.expandedItem != null && state.expandedItem?.parentBlock === item.parentBlock
+                            key(item.courseWrapper.course.id, item.parentBlock.day, item.startSection) {
+                                val isExpanded = state.expandedItem != null && state.expandedItem?.parentBlock === item.parentBlock
 
-                            Box(
-                                modifier = Modifier
-                                    .padding(style.courseBlockOuterPadding)
-                                    .zIndex(if (isExpanded) 2f else 0f)
-                                    .then(
+                                Box(
+                                    modifier = Modifier
+                                        .padding(style.courseBlockOuterPadding)
+                                        .graphicsLayer { }
+                                        .zIndex(if (isExpanded) 2f else 0f)
+                                        .then(
                                         if (!isExpanded) {
                                             Modifier.pointerInput(item) {
                                                 detectTapGestures(
@@ -356,7 +360,8 @@ fun ScheduleGrid(
                                 }
                             }
                         }
-                    },
+                    }
+                },
                     modifier = Modifier
                         .height(totalGridHeight).weight(1f)
                         .onSizeChanged { state.gridWidthPx = it.width.toFloat() }

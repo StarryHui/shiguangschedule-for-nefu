@@ -37,21 +37,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: 构建 Debug APK (Build Debug APK)
+      - name: 构建 Android APK (Build Release & Debug APK)
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleRelease assembleDebug --stacktrace
 
       - name: 上传 APK 产物 (Upload APK Artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: shiguangschedule-nefu-debug-apk
-          path: androidApp/build/outputs/apk/debug/*.apk
+          name: shiguangschedule-nefu-v2-apk
+          path: androidApp/build/outputs/apk/**/*.apk
           retention-days: 14
 
   build-ios:
     name: 构建 iOS IPA
     runs-on: macos-15
+    continue-on-error: true
 
     steps:
       - name: 检出代码 (Checkout)

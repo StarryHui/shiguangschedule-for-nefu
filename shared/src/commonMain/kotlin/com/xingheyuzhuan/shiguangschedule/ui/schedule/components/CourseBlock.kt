@@ -5,12 +5,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -93,7 +95,7 @@ fun CourseBlock(
     val borderColor = if (isFloating) Color(0xFF2196F3) else MaterialTheme.colorScheme.outline
     val borderWidth = if (isFloating) 2.dp else 1.dp
     val borderAlpha = if (isFloating) 1.0f else style.courseBlockAlpha
-    val shape = RoundedCornerShape(style.courseBlockCornerRadius)
+    val shape = remember(style.courseBlockCornerRadius) { RoundedCornerShape(style.courseBlockCornerRadius) }
 
     val borderModifier = when (style.borderType) {
         BorderTypeProto.BORDER_TYPE_SOLID -> {
@@ -178,22 +180,12 @@ fun CourseBlock(
             }
         }
 
-        // 当单课不是当前周时，进行干净的全局遮罩染色与虚化斜线绘制
+        // 当单课不是当前周时，采用轻量化单层半透明遮罩，彻底杜绝额外 Box 节点与每帧 Shader 分配
         if (isVisualDemoted && !isFloating) {
-            Box(
+            Spacer(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = (if (isDarkTheme) Color.Black else Color.White).copy(alpha = 0.618f))
-                    .drawBehind {
-                        val stripeWidth = 5.dp.toPx()
-                        val stripeColor = (if (isDarkTheme) Color.White else Color.Black).copy(alpha = 0.06f)
-                        val brush = Brush.linearGradient(
-                            0.0f to stripeColor, 0.45f to stripeColor,
-                            0.55f to Color.Transparent, 1.0f to Color.Transparent,
-                            start = Offset(0f, 0f), end = Offset(stripeWidth, stripeWidth), tileMode = TileMode.Repeated
-                        )
-                        drawRect(brush = brush)
-                    }
+                    .background(color = (if (isDarkTheme) Color.Black else Color.White).copy(alpha = 0.58f))
             )
         }
     }
