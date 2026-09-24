@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - nefu-adapter-only
   workflow_dispatch:
 
 jobs:
@@ -36,7 +37,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: 构建 Debug APK (Build Debug APK)
+      - name: 构建 Android APK (Build APK)
         run: |
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
@@ -44,6 +45,6 @@ jobs:
       - name: 上传 APK 产物 (Upload APK Artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: shiguangschedule-nefu-debug-apk
-          path: androidApp/build/outputs/apk/debug/*.apk
+          name: shiguangschedule-nefu-v1-apk
+          path: androidApp/build/outputs/apk/**/*.apk
           retention-days: 14
