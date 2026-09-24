@@ -1,0 +1,49 @@
+name: Build NEFU Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码 (Checkout)
+        uses: actions/checkout@v4
+
+      - name: 运行贡献者数据生成脚本 (Generate Contributors Data)
+        run: |
+          chmod +x .github/scripts/build_contributors.sh
+          .github/scripts/build_contributors.sh
+
+      - name: 设置 JDK 21 (Setup JDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: 设置 Gradle 缓存 (Cache Gradle Dependencies)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 构建 Debug APK (Build Debug APK)
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: 上传 APK 产物 (Upload APK Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: shiguangschedule-nefu-debug-apk
+          path: androidApp/build/outputs/apk/debug/*.apk
+          retention-days: 14
