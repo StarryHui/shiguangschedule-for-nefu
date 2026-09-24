@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -64,6 +65,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.number
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
@@ -114,8 +116,9 @@ fun WeeklyScheduleScreen(
         return current
     }
 
-    LaunchedEffect(pagerState.currentPage, uiState.firstDayOfWeek) {
-        snapshotFlow { pagerState.currentPage }
+    // 仅在翻页完全停止稳定时更新 ViewModel，避免在滑动手势与动画过程中触发数据库查询和重组
+    LaunchedEffect(pagerState, uiState.firstDayOfWeek) {
+        snapshotFlow { pagerState.settledPage }
             .distinctUntilChanged()
             .collect { pageIndex ->
                 val offsetWeeks = (pageIndex - INFINITE_PAGER_CENTER).toLong()
@@ -161,6 +164,25 @@ fun WeeklyScheduleScreen(
     val customTextColor = composedStyle.pageTextColor ?: MaterialTheme.colorScheme.onSurface
     val customSubTextColor = customTextColor.copy(alpha = 0.7f)
 
+    // 纯内存派生计算当前正在浏览页的周数，实现标题实时无缝更新，且不触发全局 Flow 和非必要的页面重组
+    val currentDisplayWeek by remember(pagerState, uiState.semesterStartDate, uiState.firstDayOfWeek) {
+        derivedStateOf {
+            val startDate = uiState.semesterStartDate
+            if (startDate == null) {
+                null
+            } else {
+                val offsetWeeks = (pagerState.currentPage - INFINITE_PAGER_CENTER).toLong()
+                val firstDay = DayOfWeek(uiState.firstDayOfWeek)
+                val thisMonday = getPreviousOrSameDay(today, firstDay)
+                val targetMonday = thisMonday.plus(offsetWeeks * 7, DateTimeUnit.DAY)
+                val semesterStartMonday = getPreviousOrSameDay(startDate, firstDay)
+                val daysDiff = semesterStartMonday.daysUntil(targetMonday)
+                ((daysDiff / 7) + 1).toInt()
+            }
+        }
+    }
+
+    val weekForTitle = currentDisplayWeek ?: uiState.weekIndexInPager
     val displayTitle = when {
         !uiState.isSemesterSet || uiState.semesterStartDate == null -> {
             stringResource(Res.string.title_semester_not_set)
@@ -168,8 +190,8 @@ fun WeeklyScheduleScreen(
         uiState.daysUntilStart > 0 -> {
             stringResource(Res.string.title_vacation_until_start, uiState.daysUntilStart.toString())
         }
-        uiState.weekIndexInPager != null && uiState.weekIndexInPager!! in 1..uiState.totalWeeks -> {
-            stringResource(Res.string.title_current_week, uiState.weekIndexInPager.toString())
+        weekForTitle != null && weekForTitle in 1..uiState.totalWeeks -> {
+            stringResource(Res.string.title_current_week, weekForTitle.toString())
         }
         else -> {
             stringResource(Res.string.title_vacation)
@@ -258,6 +280,7 @@ fun WeeklyScheduleScreen(
 
             HorizontalPager(
                 state = pagerState,
+                key = { pageIndex -> pageIndex },
                 modifier = Modifier
                     .padding(
                         start = scaffoldInnerPadding.calculateStartPadding(LayoutDirection.Ltr),
@@ -296,15 +319,35 @@ fun WeeklyScheduleScreen(
                 val pageCourses = uiState.courseCache[pageMondayDate.toString()] ?: emptyList()
                 val gridState = rememberScheduleGridState(gridScrollState = gridScrollState)
 
-                val weekIndex = uiState.weekIndexInPager
+                // 每页周数基于自身实际周一日期独立推导，避免因全局中心页变化而导致所有已加载页面发生不必要的重组
+                val pageWeekIndex = remember(pageMondayDate, uiState.semesterStartDate, uiState.firstDayOfWeek) {
+                    val startDate = uiState.semesterStartDate
+                    if (startDate != null) {
+                        val firstDay = DayOfWeek(uiState.firstDayOfWeek)
+                        val semesterStartMonday = getPreviousOrSameDay(startDate, firstDay)
+                        val daysDiff = semesterStartMonday.daysUntil(pageMondayDate)
+                        ((daysDiff / 7) + 1).toInt()
+                    } else null
+                }
                 val totalWeeks = uiState.totalWeeks
-                val weekStr = if (weekIndex != null && weekIndex in 1..totalWeeks) {
-                    stringResource(Res.string.format_week_display, weekIndex)
+                val weekStr = if (pageWeekIndex != null && pageWeekIndex in 1..totalWeeks) {
+                    stringResource(Res.string.format_week_display, pageWeekIndex)
                 } else {
                     null
                 }
 
-                val gridViewState = remember(pageDateStrings, pageYearString, uiState, pageCourses, pageTodayIndex, weekStr) {
+                // 精细化 remember key，移除宽泛的 uiState，避免翻页时导致全量页面重新构造 State
+                val gridViewState = remember(
+                    pageDateStrings,
+                    pageYearString,
+                    weekStr,
+                    uiState.timeSlots,
+                    pageCourses,
+                    uiState.showWeekends,
+                    pageTodayIndex,
+                    uiState.firstDayOfWeek,
+                    uiState.currentSectionIndex
+                ) {
                     ScheduleGridViewState(
                         dates = pageDateStrings,
                         currentYear = pageYearString,
@@ -318,20 +361,30 @@ fun WeeklyScheduleScreen(
                     )
                 }
 
-                val gridActions = remember(uiState, floatingDuration, snackbarMsg) {
+                val currentUiState by rememberUpdatedState(uiState)
+                val currentFloatingDuration by rememberUpdatedState(floatingDuration)
+                val currentSnackbarMsg by rememberUpdatedState(snackbarMsg)
+                val currentComposedStyle by rememberUpdatedState(composedStyle)
+
+                // 稳定 Actions 实例引用，使 ScheduleGrid 可以充分命中 Compose 的 Smart Skip Recomposition
+                val gridActions = remember {
                     object : ScheduleGridActions {
                         override fun onCourseBlockClicked(block: MergedCourseBlock) {
                             selectedBlockForDetail = block
                         }
 
                         override fun onGridCellClicked(day: Int, section: Int) {
-                            if (floatingCourse != null) {
-                                val targetWeek = uiState.weekIndexInPager ?: uiState.currentWeekNumber ?: return
+                            val state = currentUiState
+                            val style = currentComposedStyle
+                            val duration = currentFloatingDuration
+                            val floating = state.floatingCourse
+                            if (floating != null) {
+                                val targetWeek = state.weekIndexInPager ?: state.currentWeekNumber ?: return
                                 val startSec = section.toFloat()
-                                val endSec = if (composedStyle.scheduleMode == ScheduleModeProto.TIME_24H_MODE) {
-                                    startSec + floatingDuration
+                                val endSec = if (style.scheduleMode == ScheduleModeProto.TIME_24H_MODE) {
+                                    startSec + duration
                                 } else {
-                                    startSec + floatingDuration - 1f
+                                    startSec + duration - 1f
                                 }
 
                                 coroutineScope.launch {
@@ -343,13 +396,13 @@ fun WeeklyScheduleScreen(
                                     )
                                 }
                             } else {
-                                val currentWeek = uiState.weekIndexInPager ?: 0
-                                val isCurrentPageValid = currentWeek in 1..uiState.totalWeeks
+                                val currentWeek = state.weekIndexInPager ?: 0
+                                val isCurrentPageValid = currentWeek in 1..state.totalWeeks
 
                                 if (isCurrentPageValid) {
                                     coroutineScope.launch {
                                         val currentWeekSet = setOf(currentWeek)
-                                        val presetData = if (composedStyle.scheduleMode == ScheduleModeProto.TIME_24H_MODE) {
+                                        val presetData = if (style.scheduleMode == ScheduleModeProto.TIME_24H_MODE) {
                                             val startHour = section.coerceIn(0, 23)
                                             val endHour = (startHour + 1) % 24
 
@@ -378,7 +431,7 @@ fun WeeklyScheduleScreen(
                                     }
                                 } else {
                                     coroutineScope.launch {
-                                        snackbarHostState.showSnackbar(snackbarMsg)
+                                        snackbarHostState.showSnackbar(currentSnackbarMsg)
                                     }
                                 }
                             }
@@ -398,8 +451,9 @@ fun WeeklyScheduleScreen(
                             newStartSection: Float,
                             newEndSection: Float
                         ) {
-                            val currentWeek = uiState.weekIndexInPager ?: 0
-                            if (currentWeek in 1..uiState.totalWeeks) {
+                            val state = currentUiState
+                            val currentWeek = state.weekIndexInPager ?: 0
+                            if (currentWeek in 1..state.totalWeeks) {
                                 block.courses.firstOrNull()?.course?.id?.let { courseId ->
                                     coroutineScope.launch {
                                         viewModel.updateCourseTimeByGesture(
@@ -411,7 +465,7 @@ fun WeeklyScheduleScreen(
                                     }
                                 }
                             } else {
-                                coroutineScope.launch { snackbarHostState.showSnackbar(snackbarMsg) }
+                                coroutineScope.launch { snackbarHostState.showSnackbar(currentSnackbarMsg) }
                             }
                         }
 
@@ -420,8 +474,9 @@ fun WeeklyScheduleScreen(
                             newStart: Float,
                             newEnd: Float
                         ) {
-                            val currentWeek = uiState.weekIndexInPager ?: 0
-                            if (currentWeek in 1..uiState.totalWeeks) {
+                            val state = currentUiState
+                            val currentWeek = state.weekIndexInPager ?: 0
+                            if (currentWeek in 1..state.totalWeeks) {
                                 block.courses.firstOrNull()?.course?.id?.let { courseId ->
                                     coroutineScope.launch {
                                         viewModel.updateCourseTimeByGesture(
@@ -433,13 +488,14 @@ fun WeeklyScheduleScreen(
                                     }
                                 }
                             } else {
-                                coroutineScope.launch { snackbarHostState.showSnackbar(snackbarMsg) }
+                                coroutineScope.launch { snackbarHostState.showSnackbar(currentSnackbarMsg) }
                             }
                         }
 
                         override fun onInitiateFloatingMode(block: MergedCourseBlock) {
+                            val state = currentUiState
                             val targetCourseWrapper = block.courses.firstOrNull()
-                            val currentWeek = uiState.weekIndexInPager ?: uiState.currentWeekNumber
+                            val currentWeek = state.weekIndexInPager ?: state.currentWeekNumber
                             if (targetCourseWrapper != null && currentWeek != null) {
                                 viewModel.enterFloatingMode(
                                     course = targetCourseWrapper,
