@@ -37,10 +37,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: 构建 Android APK (Build Release & Debug APK)
+      - name: 构建 Android APK (Build Debug APK)
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleRelease assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace
 
       - name: 上传 APK 产物 (Upload APK Artifact)
         uses: actions/upload-artifact@v4
