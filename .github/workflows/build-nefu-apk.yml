@@ -51,11 +51,22 @@ jobs:
 
   build-ios:
     name: 构建 iOS IPA
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - name: 检出代码 (Checkout)
         uses: actions/checkout@v4
+
+      - name: 选择 Xcode 16 (Select Xcode 16)
+        run: |
+          for xcode_path in /Applications/Xcode_16*.app; do
+            if [ -d "$xcode_path" ]; then
+              echo "选择 Xcode 版本: $xcode_path"
+              sudo xcode-select -s "$xcode_path"
+              break
+            fi
+          done
+          xcodebuild -version
 
       - name: 安装 jq 工具 (Install jq)
         run: |
